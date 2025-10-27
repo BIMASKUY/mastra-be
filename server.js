@@ -24,7 +24,8 @@ app.get('/', (req, res) => {
       '/api/authors',
       '/api/books',
       '/api/comments',
-      '/api/reviews'
+      '/api/reviews',
+      '/api/authors-books'
     ]
   });
 });
@@ -112,6 +113,40 @@ app.get('/api/reviews', async (req, res) => {
       success: true,
       count: data.length,
       data: data
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Fetch authors with their books (join table)
+app.get('/api/authors-books', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('authors')
+      .select(`
+        *,
+        books (
+          id,
+          title,
+          isbn,
+          publication_date,
+          genre,
+          description
+        )
+      `)
+      .limit(4);
+
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      count: data.length,
+      data: data,
+      description: 'Authors with their associated books (join table)'
     });
   } catch (error) {
     res.status(500).json({
